@@ -1,0 +1,7 @@
+#set these values to -1 to keep the current configuration
+string filename
+int32 num_channels
+#leave as '' for no mac filter
+string mac
+---
+string result
