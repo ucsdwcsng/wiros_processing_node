@@ -172,11 +172,7 @@ catkin_package(
 ## in contrast to setup.py, you can choose the destination
 catkin_install_python(PROGRAMS
   scripts/aoa_node.py
-<<<<<<< HEAD
   scripts/generate_static_compensation.py
-=======
-  scripts/generate_channel_files.py
->>>>>>> 454f0030aade08df023d6bedbf5f260f67468c4c
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 

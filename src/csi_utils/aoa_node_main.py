@@ -32,10 +32,8 @@ class aoa_node:
         self.aoa_sensors = {}
         self.macs = set() # set of MAC addresses
         self.comp = None # compensation to be applied to RAW CSI values
-<<<<<<< HEAD
-=======
+
         self.apply_nts = True
->>>>>>> 454f0030aade08df023d6bedbf5f260f67468c4c
 
         self.csi_export_mac_filter = None
         self.num_save_csi = 0
@@ -147,11 +145,7 @@ class aoa_node:
             if self.pub_prof:
                 self.aoa_sensors[mac].profile_tx_id = self.prof_tx_id
 
-<<<<<<< HEAD
-        self.last_channel = pipeline_utils.extract_csi(msg, self.comp, self.valid_tx_ant)
-=======
         self.last_channel = pipeline_utils.extract_csi(msg, self.comp, self.apply_nts, self.valid_tx_ant)
->>>>>>> 454f0030aade08df023d6bedbf5f260f67468c4c
         self.last_mac = mac
         self.last_rssi = msg.rssi
         
@@ -219,11 +213,8 @@ class aoa_node:
                             label=f"Rx Ant {ii}")
             axs[1].legend()
 
-<<<<<<< HEAD
             fig.set_tight_layout(True)
-=======
-            plt.tight_layout()
->>>>>>> 454f0030aade08df023d6bedbf5f260f67468c4c
+
             canvas.draw()  # draw the canvas, cache the renderer
 
             width, height = fig.get_size_inches() * fig.get_dpi()

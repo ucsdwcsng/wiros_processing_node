@@ -12,11 +12,7 @@ Uniform Linear Array (Normal 0,1,2,3 spacing, distance between antennas=lambda/2
 3
 2
 1
-<<<<<<< HEAD
 0  --X-Axis-->
-=======
-0  --Forward-Axis-->
->>>>>>> 454f0030aade08df023d6bedbf5f260f67468c4c
 ```
 --
 
@@ -31,11 +27,7 @@ The same array with a more natural antenna placement for the RT-AC86u. It is eas
 3
 1
 2
-<<<<<<< HEAD
 0 --X-Axis-->
-=======
-0 --Forward-Axis-->
->>>>>>> 454f0030aade08df023d6bedbf5f260f67468c4c
 ```
 
 --
@@ -50,9 +42,5 @@ A Square antenna array that can sense the full 360-degree range at the cost of s
 ```
 3  1
 
-<<<<<<< HEAD
 2  0  --X-Axis-->
-=======
-2  0  --Forward-Axis-->
->>>>>>> 454f0030aade08df023d6bedbf5f260f67468c4c
 ```

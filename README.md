@@ -76,11 +76,8 @@ rosrun bearing_sensor aoa_node _name:=aoa_node --prof --color --algo {algorithm 
 
 ## Collecting Compensation Data
 
-<<<<<<< HEAD
 In order to accurately measure AoA, we need the relative phase between different pairs of antennas. However, due to differing wire lengths as well as filter effects from the onboard RF circuitry, each RX chain will have a phase bias which varies per subcarrier and per channel. So in order to accurately measure AoA, these biases need to be measured and removed from incoming data. The necessary phases to remove these biases can then be passed in the `comp` parameter and will be applied to incoming CSI by the ROS node.
-=======
-In order to accurately measure AoA, we need the relative phase between different pairs of antennas. However, due to differing wire lengths as well as filter effects from the onboard RF circuitry, each RX chain will have a phase bias which varies per subcarrier and per channel. So in order to accurately measure AoA, these biases need to be measured and removed from incoming data. The necessary phases to remove these biases can then be passed in the `comp` parameter and will be applied to incoming CSI by the ROS node. We provide two methods for measuring this compensation data
->>>>>>> 454f0030aade08df023d6bedbf5f260f67468c4c
+
 
 ### Static Compensation
 
@@ -98,41 +95,18 @@ The simplest way to measure the phase bias at the receiver is to ensure that the
 
 5. Use the rosbag processing script to create the compensation file:
     ```
-<<<<<<< HEAD
     rosrun csi_tools generate_static_compensation.py BAG_PATH
     ```
 
 Compensation files follow the naming convention `{IP}-{chanspec}.npy`
 
-### Wireless Compensation File
-=======
-    rosrun csi_tools generate_channel_files.py --create-comp BAG_PATH
-    ```
-
 ### Dynamic Compensation File
->>>>>>> 454f0030aade08df023d6bedbf5f260f67468c4c
 
 TODO
 
 ## Post-Processing a Bag File
 
-<<<<<<< HEAD
 We provide an example script, [`generate_channel_files.py`](scripts/generate_channel_files.py) to parse a rosbag file into several .mat or .npz files easy to use with MATLAB or python. It will create one file per transmitter per channel. It can be copied and edited to use the appropriate parameters for your data.
-=======
-We provide a script to parse a rosbag file into several .npz files easy to use with MATLAB or python. It will create one file per transmitter per channel. It can be run as such:
-
-```
-rosrun csi_tools generate_channel_files.py {ARGS} BAGFILE
-```
-
-It takes the arguments:
-
-- `-o OUT, --out OUT` : Directory to output processed data, defaults to cwd.
-- `-a ALGO, --algo ALGO` : AoA extraction algorithm to use
-- `-c COMP, --comp COMP` : Compensation File to use
-- `-p, --prof` : Save the AoA profiles
-- `--create-comp` : Generate a compensation file from static compensation data
->>>>>>> 454f0030aade08df023d6bedbf5f260f67468c4c
 
 The output `.npz` files will have the following field:
 
@@ -170,7 +144,3 @@ TODO
 1. Kotaru, Manikanta, et al. "Spotfi: Decimeter level localization using wifi." Proceedings of the 2015 ACM Conference on Special Interest Group on Data Communication. 2015.
 2. Arun, Aditya, et al. "ViWiD: Leveraging WiFi for Robust and Resource-Efficient SLAM." arXiv preprint arXiv:2209.08091 (2022).
 3. Blanco, Alejandro, et al. "Accurate ubiquitous localization with off-the-shelf ieee 802.11 ac devices." The 19th Annual International Conference on Mobile Systems, Applications, and Services (MobiSys 2021). 2021.
-<<<<<<< HEAD
-
-=======
->>>>>>> 454f0030aade08df023d6bedbf5f260f67468c4c

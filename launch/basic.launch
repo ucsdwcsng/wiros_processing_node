@@ -1,37 +1,22 @@
 <?xml version="1.0"?>
 <launch>
 
-<<<<<<< HEAD
-
-=======
->>>>>>> 454f0030aade08df023d6bedbf5f260f67468c4c
   <!-- Bearing computation node -->
   <node pkg="bearing_sensor" type="aoa_node.py" name="aoa_node" output="screen" clear_params="true"
         required="true">
-    
-<<<<<<< HEAD
-    <!-- <rosparam param="valid_tx_ant"> [0,1] </rosparam> -->
+
     <!-- AoA/AoD computation parameters -->
     <param name="algo"                type="string"   value="spotfi" /> <!-- See attached README for more information -->
     
     <!-- Number of indepedent channels to average over,
          each channel from each Tx is considered an independent channel -->
     <param name="smoothing_window"    type="int"      value="25" />
-=======
-    <rosparam param="valid_tx_ant"> [0,1] </rosparam> <!-- Commenting it out invokes default behavior of using all Tx antennas-->
-    <!-- AoA/AoD computation parameters -->
-    <param name="algo"                  type="string"   value="spotfi" /> <!-- See attached README for more information -->
-    
-    <!-- Number of indepedent channels to average over,
-         each channel from each Tx is considered an independent channel -->
-    <param name="smoothing_window"      type="int"      value="25" />
->>>>>>> 454f0030aade08df023d6bedbf5f260f67468c4c
 
     <!-- NUM_THETA_STEPS linearly spaced theta values will be created 
          between THETA_THRESH[0] and THETA_THRESH[1]. Similarly for distance D -->
     <rosparam param="theta_thresh"> [-180, 180] </rosparam>
     <rosparam param="d_thresh"> [-40, 40] </rosparam>
-<<<<<<< HEAD
+
     <param name="num_theta_steps"     type="int"      value="180" /> 
     <param name="num_d_steps"         type="int"      value="180" />
     
@@ -44,31 +29,7 @@
     
     <!-- Filters on the data -->
     <param name="rssi_thresh"         type="double"   value="-100" />
-    
-    <!-- Compensation file path -->
-    <!--         <param name="comp"                type="string"   value="/home/aarun/Research/current_projects/ros_csi_ws/src/ros_bearing_sensor/launch/comp_223.npy" /> -->
-    
-    <!-- Code control parameters -->
-    <param name="publish_profile"     type="bool"     value="True" /> <!-- Publish profile as image -->
-    <param name="publish_channel"     type="bool"     value="True" /> <!-- Publish profile as image -->
-    <param name="color_profile"       type="bool"     value="True" /> <!-- Color the profile -->
-    <param name="profile_tx_id"       type="int"     value="0" /> <!-- Profile of which transmitter antenna? -->
-    <param name="channel_tx_id"       type="int"     value="0" /> <!-- Profile of which transmitter antenna? -->
-    <param name="color_profile"       type="bool"     value="True" /> <!-- Color the profile -->
-    </node>
-=======
-    <param name="num_theta_steps"       type="int"      value="180" /> 
-    <param name="num_d_steps"           type="int"      value="180" />
-    
-    <!-- Receiver positions in meters, interleaved x,y coordinates -->
-    <rosparam param="rx_position"> [0,  0,
-                                    0,  0.052,
-                                    0,  0.026,
-                                    0,  0.078] </rosparam>
-    
-    <!-- Filters on the data -->
-    <param name="rssi_thresh"           type="double"   value="-100" />
-    
+
     <!-- Compensation file path -->
     <param name="comp"                  type="string"   value="/path/to/compensation_file/comp.npy" />
     
@@ -87,5 +48,4 @@
   <!-- Image view node to visualize channel profiles -->
   <node pkg="bearing_sensor" type="runRqt_image_view.sh" name="image_view"  />
 
->>>>>>> 454f0030aade08df023d6bedbf5f260f67468c4c
 </launch>

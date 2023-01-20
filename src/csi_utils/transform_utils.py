@@ -67,12 +67,7 @@ class full_svd_aoa_sensor:
         #setup the averaging window and compute DFT matrices
         bw = chanspec[1]
         if chanspec not in self.chanspec_seen:
-<<<<<<< HEAD
-            # import pdb
-            # pdb.set_trace()
-=======
 
->>>>>>> 454f0030aade08df023d6bedbf5f260f67468c4c
             #load dft matrix
             self.Theta[chanspec], self.Tau[chanspec] = fft_mat(
                 self.rx_pos,
@@ -231,11 +226,8 @@ class fft_aoa_sensor:
         self.chanspec_seen = set()
         self.Theta = {}
         self.Tau = {}
-<<<<<<< HEAD
         self.valid_tx_ant = valid_tx_ant
-=======
 
->>>>>>> 454f0030aade08df023d6bedbf5f260f67468c4c
         self.profile_tx_id = 0
 
     def __call__(self, H, chanspec):
@@ -252,13 +244,9 @@ class fft_aoa_sensor:
 
         aoas = []
         prof_to_ret = None
-<<<<<<< HEAD
 
         tx_it = range(H.shape[0]) if self.valid_tx_ant == 'all' else self.valid_tx_ant
         for idx in tx_it:
-=======
-        for idx in valid_tx_ant:
->>>>>>> 454f0030aade08df023d6bedbf5f260f67468c4c
             # skip packets across transmit antennas which have zero information
             # last subcarrier carries some data interestingly
             if np.all(H[idx, :, :-1] == 0):
@@ -340,16 +328,9 @@ class aoa_sensor_1d:
             self.svd_window[chanspec] = np.zeros((self.pkt_window,self.rx_pos.shape[0],self.rx_pos.shape[0]),dtype=np.complex128)
             self.svd_roll[chanspec] = 0
 
-<<<<<<< HEAD
         num_meas = H.shape[2]
 
         c_roll = self.svd_roll[chanspec]
-
-=======
-        num_meas = H.shape[1]
-
-        c_roll = self.svd_roll[chanspec]
->>>>>>> 454f0030aade08df023d6bedbf5f260f67468c4c
         for n in range(num_meas):
             self.svd_window[chanspec][c_roll, :, :] = H[:,:,n].T @ H[:,:,n].conj()
 
@@ -441,11 +422,6 @@ class spotfi_sensor:
                                                      self.theta_space, self.tof_space,
                                                      len_rect, ht_rect)
 
-<<<<<<< HEAD
-        # import pdb
-        # pdb.set_trace()
-=======
->>>>>>> 454f0030aade08df023d6bedbf5f260f67468c4c
         circ_crop = np.zeros((n_tx_ant, n_rx_ant, len_rect, n_sub - len_rect), dtype=np.complex128)
         for j in np.arange(n_tx_ant):
             for i in np.arange(n_rx_ant):
@@ -463,12 +439,7 @@ class spotfi_sensor:
         R = csi_smooth @ csi_smooth.conj().T
         [vals, vecs] = np.linalg.eig(R)
         vecs = vecs/col_norm(vecs)
-<<<<<<< HEAD
-        # import pdb
-        # pdb.set_trace()
-=======
 
->>>>>>> 454f0030aade08df023d6bedbf5f260f67468c4c
         assert np.all(vals >= 0), "PSD matrix cannot have negative eigenvalues"
         idx = np.abs(vals) < SPOTFI_THRESH*np.max(np.abs(vals))
         profile = np.reciprocal(col_norm(vecs[:, idx].conj().T @ self.steering_mat[chanspec])**2 \
