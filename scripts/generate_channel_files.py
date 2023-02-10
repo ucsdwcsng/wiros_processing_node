@@ -16,6 +16,7 @@ export_npz = True
 export_mat = True
 
 #path to a bag file
+print("Loading bag...")
 bag = rosbag.Bag("~/raw_data.bag")
 
 #dir to output processed data
@@ -65,7 +66,7 @@ profs = {}
 aoa_sensors = {}
 rx = None
 
-if not export_mat and not_export_npz:
+if not export_mat and not export_npz:
     print("You have not set export_mat or export_npz, exiting.")
     exit(0)
 
