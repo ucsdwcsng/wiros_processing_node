@@ -2,7 +2,7 @@
 import rospy
 from csi_utils.aoa_node_main import aoa_node
 import numpy as np
-
+import os
 EPS = np.finfo('float').eps
 
 
@@ -15,7 +15,21 @@ if __name__ == '__main__':
     #setup node options
     aoa.algo = rospy.get_param("~algo", "fft")
 
-    aoa.comp_file = rospy.get_param("~comp", None)
+    
+    comp_path = rospy.get_param("~comp", None)
+    do_comp = rospy.get_param("~compensate_channel", True)
+
+    if not do_comp:
+        ROS_WARN("Turning off compensation.")
+        comp_path = None
+    if comp_path is not None:
+        aoa.comp_path = comp_path
+        if os.path.isdir(comp_path):
+            aoa.comp = {}
+            aoa.use_comp_folder = True
+        elif os.path.isfile(comp_path):
+            aoa.comp = np.load(comp_path)
+            aoa.use_comp_folder = False
 
     aoa.rx_position = np.asarray(rospy.get_param("~rx_position", None)).reshape((-1,2))
     if aoa.rx_position is None:
@@ -40,13 +54,6 @@ if __name__ == '__main__':
     aoa.rssi_threshold = rospy.get_param("~rssi_thresh", -65)
     # Will use all TX if left as None
     aoa.valid_tx_ant = rospy.get_param("~valid_tx_ant", None)
-
-    if compensate_channel:
-        try:
-            aoa.comp = np.load(aoa.comp_file)
-        except:
-            aoa.comp = None
-            rospy.logwarn(f"Failed to read compensation file at {aoa.comp_file}")
     
     #start node
     aoa.start()

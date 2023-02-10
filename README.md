@@ -62,7 +62,7 @@ rosrun bearing_sensor aoa_node _name:=aoa_node --prof --color --algo {algorithm 
 
 ### Device-Related
 
-- `comp` : Optional path to a [compensation file](#collecting-compensation-data). These are channel-specific files containing calibration values for the measured phase. Should be a path to a .npy file, specifics of how to collect and use compensation are provided below.
+- `comp` : Optional path to a [compensation folder](#collecting-compensation-data) or file. These are channel-specific files containing calibration values for the measured phase. If you give a path to a folder, then the node will automatically load compensation files from the folder specified corresponding to the channel of the received CSI. Compensation files should be stored in the format `{receiver IP}-{channel number}.npy`, e.g. `192.168.1.1-36.npy`. If you give a path to a .npy file, then the device will always load this compensation file. Note that in general you need different compensation files for different channels.
 
 - `rx_position` : The position of the receiver antennas in the coordinate frame you wish to measure in. AoA is measured going counter-clockwise from the positive x-axis. Typically you would put the first antenna at the origin. More explanations as well as some example antenna array setups can be found in [antennas.md](antennas.md). Also note that SpotFi assumes standard uniform linear array, as the CSI-Smoothing algorithm isn't well-defined for other array shapes.
 
@@ -78,7 +78,6 @@ rosrun bearing_sensor aoa_node _name:=aoa_node --prof --color --algo {algorithm 
 
 In order to accurately measure AoA, we need the relative phase between different pairs of antennas. However, due to differing wire lengths as well as filter effects from the onboard RF circuitry, each RX chain will have a phase bias which varies per subcarrier and per channel. So in order to accurately measure AoA, these biases need to be measured and removed from incoming data. The necessary phases to remove these biases can then be passed in the `comp` parameter and will be applied to incoming CSI by the ROS node.
 
-
 ### Static Compensation
 
 This method provides very clean results but requires a [4-to-1 power splitter](https://www.minicircuits.com/pdfs/ZN4PD-642W+.pdf), 3 SMA 50-ohm terminators, about 55dB of attenuators, and a second AC86u. If you don't have these then you can follow the [dynamic compensation method](#dynamic-compensation-file).
@@ -87,7 +86,7 @@ The simplest way to measure the phase bias at the receiver is to ensure that the
 
 1. Connect the 4 receiver ports of the AC86u to the output of the power splitter. Ensure that you have the same length of cable between the board and each splitter port as you normally would between the board and each antenna.
 
-2. Connect the attenuators to the input of the splitter, and one of the outputs of the other AC86u to the attenuators. Terminate the other 3 antenna ports to cancel any crosstalk.
+2. Connect the attenuators to the input of the splitter, and one of the outputs of the other AC86u to the attenuators. Ideally you should terminate the other 3 antenna ports to cancel any crosstalk.
 
 3. Start [CSI collection, TODO](Link to final repo goes here) at both the transmitter and receiver ends. The transmitter should have packet injection turned on and the receiver should set its MAC filter to the address the transmitter is injecting with.
 

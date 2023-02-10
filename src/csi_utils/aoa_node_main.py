@@ -30,6 +30,9 @@ class aoa_node:
 
         self.aoa_sensors = {}
         self.macs = set() # set of MAC addresses
+
+        self.comp_path = None
+        self.use_comp_folder = True
         self.comp = None # compensation to be applied to RAW CSI values
 
         self.apply_nts = True
@@ -108,7 +111,6 @@ class aoa_node:
         
     #callback
     def csi_callback(self, msg):
-
         if msg.rssi < self.rssi_threshold:
             return
         
@@ -123,8 +125,19 @@ class aoa_node:
             
             if self.pub_prof:
                 self.aoa_sensors[mac].profile_tx_id = self.prof_tx_id
-
-        self.last_channel = pipeline_utils.extract_csi(msg, self.comp, self.apply_nts, self.valid_tx_ant)
+        if self.use_comp_folder:
+            comp_spec=(msg.rx_id,msg.chan)
+            if comp_spec not in self.comp.keys():
+                spec_file=join(self.comp_path, f"{comp_spec[0]}-{comp_spec[1]}.npy")
+                if os.path.isfile(spec_file):
+                    self.comp[comp_spec] = np.load(spec_file)
+                else:
+                    rospy.logerror(f"Tried to load compensation for {comp_spec[0]} on channel {comp_spec[1]}\nbut {spec_file} does not exist. Skipping for now.")
+                    self.comp[comp_spec] = 1.0
+            self.last_channel = pipeline_utils.extract_csi(msg, self.comp[comp_spec], self.apply_nts, self.valid_tx_ant)
+        else:
+            self.last_channel = pipeline_utils.extract_csi(msg, self.comp, self.apply_nts, self.valid_tx_ant)
+        print(self.comp.keys())
         self.last_mac = mac
         self.last_rssi = msg.rssi
         
