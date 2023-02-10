@@ -7,6 +7,9 @@
 
     <!-- AoA/AoD computation parameters -->
     <param name="algo"                type="string"   value="spotfi" /> <!-- See attached README for more information -->
+
+	<!-- Compensation file path -->
+    <param name="comp"                  type="string"   value="/path/to/compensation_file/comp.npy" />
     
     <!-- Number of indepedent channels to average over,
          each channel from each Tx is considered an independent channel -->
@@ -29,18 +32,15 @@
     
     <!-- Filters on the data -->
     <param name="rssi_thresh"         type="double"   value="-100" />
-
-    <!-- Compensation file path -->
-    <param name="comp"                  type="string"   value="/path/to/compensation_file/comp.npy" />
-    
-    <!-- Code control parameters -->
+	<rosparam param="valid_tx_ant"> [0,1,2,3] </rosparam>
+    <param name="correct_tof_offset"    type="bool"     value="true" /> <!-- Apply corrections to random time-of-flight offset -->
+	
+    <!-- Visualization parameters. A lot of CPU is used to render the images so turn them off if you don't need them. -->
     <param name="publish_profile"       type="bool"     value="True" /> <!-- Publish profile as image -->
     <param name="publish_channel"       type="bool"     value="True" /> <!-- Publish profile as image -->
     <param name="color_profile"         type="bool"     value="True" /> <!-- Color the profile -->
     <param name="profile_tx_id"         type="int"      value="0" /> <!-- Profile of which transmitter antenna? -->
-    <param name="channel_tx_id"         type="int"      value="0" /> <!-- Channel of which transmitter antenna? -->
     <param name="compensate_channel"    type="bool"     value="True" /> <!-- Apply channel compensation, compensation files must be found in the above 'comp' path -->
-    <param name="correct_tof_offset"    type="bool"     value="true" /> <!-- Apply corrections to random time-of-flight offset -->
     <param name="color_profile"         type="bool"     value="True" /> <!-- Color the profile -->
 
   </node>

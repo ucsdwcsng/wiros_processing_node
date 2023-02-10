@@ -29,8 +29,6 @@ if __name__ == '__main__':
     aoa.pub_channel = rospy.get_param("~publish_channel", True)
     aoa.use_color = rospy.get_param("~color_profile", True)
     aoa.prof_tx_id = rospy.get_param("~profile_tx_id", 0)
-    aoa.chan_tx_id = rospy.get_param("~channel_tx_id", 0)
-
 
     aoa.num_theta_steps = rospy.get_param("~num_theta_steps", 180)
     aoa.num_d_steps = rospy.get_param("~num_d_steps", 100)

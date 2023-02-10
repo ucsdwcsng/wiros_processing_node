@@ -9,14 +9,13 @@ import os
 import csi_utils.constants as constants
 import csi_utils.transform_utils as transform_utils
 import csi_utils.pipeline_utils as pipeline_utils
+import csi_utils.io_utils as io_utils
 from rf_msgs.msg import Wifi, Bearing
 from sensor_msgs.msg import Image
 from csi_tools.srv import SaveChannel, SaveChannelResponse
 import traceback
-
 import matplotlib.cm as cm
-from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
-from matplotlib.figure import Figure
+
 
 class aoa_node:
     def __init__(self):
@@ -90,26 +89,6 @@ class aoa_node:
 
         return sensor
 
-    #publish an image
-    def publish_image(self, im_arr, t, id, im_type, publisher):
-        
-        ros_image = Image(encoding=im_type)
-        
-        # Create the header
-        ros_image.header.stamp = t
-        ros_image.header.frame_id = id
-        
-        # Fill the image data 
-        ros_image.height = im_arr.shape[0]
-        ros_image.width = im_arr.shape[1]
-        ros_image.data = im_arr.ravel().tobytes() # or .tostring()
-        if im_type == "rgb8":
-            ros_image.step= 3*ros_image.width
-        else:
-            ros_image.step= ros_image.width
-        
-        publisher.publish(ros_image)
-
     def export_last_channel(self):
         if self.csi_export_mac_filter is not None and self.last_mac != self.csi_export_mac_filter:
             return
@@ -149,13 +128,11 @@ class aoa_node:
         self.last_mac = mac
         self.last_rssi = msg.rssi
         
-        
         if self.num_save_csi > 0:
             self.export_last_channel()
-
-        
         try:
             self.last_aoa, prof = self.aoa_sensors[mac](self.last_channel, (msg.chan, bw))
+            
         except Exception as e:
             prof = None
             rospy.logerr("Error in computing AoA and profile")
@@ -164,7 +141,6 @@ class aoa_node:
             return
 
         # TODO Add AoD
-
         angle_msg = Bearing()
         angle_msg.header = msg.header
         angle_msg.header.stamp = rospy.get_rostime()
@@ -180,48 +156,25 @@ class aoa_node:
 
         # Publish the AoA-ToF profile
         if prof is not None and self.pub_prof:
+            if len(prof.shape) == 3:
+                prof = prof[:,:,self.prof_tx_id]
             if self.use_color:
                 profim = (self.accept_color(prof/np.max(prof))[:,:,:3] * 255).astype(np.uint8)
                 peak_idx = int((self._theta_range.shape[0]-1)*(self.last_aoa - self._theta_range[0])/(self._theta_range[-1] - self._theta_range[0]))
                 profim[peak_idx,:,:] = [255,0,0]
-                self.publish_image(profim, msg.header.stamp, msg.header.frame_id, 'rgb8',
-                                   self._prof_pub)
+                im_msg = io_utils.image_message(profim, msg.header.stamp, 'rgb8')
+                self._prof_pub.publish(im_msg)
             else:
                 profim = (255*prof/np.max(prof)).astype(np.uint8)
-                self.publish_image(profim, msg.header.stamp, msg.header.frame_id, 'mono8',
-                                   self._prof_pub)
+                im_msg = io_utils.image_message(profim, msg.header.stamp, 'mono8')
+                self._prof_pub.publish(im_msg)
 
+        
         # Publish the magnitude and phase of channel
         if self.pub_channel and self.last_channel is not None:
-            fig = Figure(figsize=(8, 10))
-            canvas = FigureCanvas(fig)
-            axs = fig.subplots(2, 1)
-
-            # plot magnitude
-            axs[0].set_xlabel("Subcarrier indices")
-            axs[0].set_ylabel("Magnitude (dB)")
-            for ii in range(self.last_channel.shape[1]):
-                axs[0].plot(20*np.log10(np.abs(self.last_channel[:, ii, self.chan_tx_id])),
-                            label=f"Rx Ant {ii}")
-            axs[0].legend()
-
-            # plot phase
-            axs[1].set_xlabel("Subcarrier indices")
-            axs[1].set_ylabel("Phase (deg)")
-            for ii in range(self.last_channel.shape[1]):
-                axs[1].plot(np.unwrap(np.angle(self.last_channel[:, ii, self.chan_tx_id]))*180/np.pi,
-                            label=f"Rx Ant {ii}")
-            axs[1].legend()
-
-            fig.set_tight_layout(True)
-
-            canvas.draw()  # draw the canvas, cache the renderer
-
-            width, height = fig.get_size_inches() * fig.get_dpi()
-            image = np.frombuffer(canvas.tostring_rgb(), dtype='uint8').reshape((int(height), int(width), 3))
-
-            self.publish_image(image, msg.header.stamp, msg.header.frame_id, 'rgb8',
-                               self._channel_pub)
+            channel_im = io_utils.draw_channel_image(self.last_channel)
+            im_msg = io_utils.image_message(channel_im, msg.header.stamp, 'rgb8')
+            self._channel_pub.publish(im_msg)
 
         rospy.loginfo("RSSI %f, AOA %f", msg.rssi, self.last_aoa)
 
