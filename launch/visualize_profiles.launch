@@ -2,7 +2,7 @@
 <launch>
 
   <!-- Bearing computation node -->
-  <node pkg="bearing_sensor" type="aoa_node.py" name="aoa_node" output="screen" clear_params="true"
+  <node pkg="csi_tools" type="aoa_node.py" name="aoa_node" output="screen" clear_params="true"
         required="true">
 
     <!-- AoA/AoD computation parameters -->
@@ -46,6 +46,6 @@
   </node>
 
   <!-- Image view node to visualize channel profiles -->
-  <node pkg="bearing_sensor" type="runRqt_image_view.sh" name="image_view"  />
+  <node pkg="csi_tools" type="runRqt_image_view.sh" name="image_view"  />
 
 </launch>

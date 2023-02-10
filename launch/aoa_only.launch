@@ -1,0 +1,51 @@
+<?xml version="1.0"?>
+<launch>
+
+  <!-- Bearing computation node -->
+  <node pkg="csi_tools" type="aoa_node.py" name="aoa_node" output="screen" clear_params="true"
+        required="true">
+
+	<!-- AoA/AoD computation parameters -->
+    <param name="algo"                type="string"   value="aoa_only" /> <!-- See attached README for more information -->
+
+	<!-- Compensation file path -->
+    <param name="comp"                type="string"   value="" />
+	<param name="compensate_channel"    type="bool"     value="True" /> <!-- Apply channel compensation, compensation files must be found in the above 'comp' path -->
+	
+	<!-- See antennas.md -->
+    <rosparam param="rx_position"> [0,  0,
+    0,  0.052,
+    0,  0.026,
+    0,  0.078]
+    </rosparam>
+
+	
+    <!-- Code control parameters -->
+    <param name="publish_profile"     type="bool"     value="False" /> <!-- Publish profile as image -->
+    <param name="publish_channel"     type="bool"     value="False" /> <!-- Publish profile as image -->
+    <param name="color_profile"       type="bool"     value="False" /> <!-- Color the profile -->
+    <param name="profile_tx_id"       type="int"     value="0" /> <!-- Profile of which transmitter antenna? -->
+    <param name="channel_tx_id"       type="int"     value="0" /> <!-- Profile of which transmitter antenna? -->
+
+    <!-- Number of indepedent channels to average over, each channel from each Tx is considered an independent channel -->
+    <param name="smoothing_window"    type="int"      value="1" />
+    
+    <rosparam param="theta_thresh"> [-180, 180] </rosparam>
+    <rosparam param="d_thresh"> [-40, 40] </rosparam>
+    <!-- NUM_THETA_STEPS linearly spaced theta values will be created 
+         between THETA_THRESH[0] and THETA_THRESH[1]. Similarly for distance D -->
+    <param name="num_theta_steps"     type="int"      value="180" /> 
+    <param name="num_d_steps"         type="int"      value="180" />
+
+    <!-- Filters on the data -->
+    <param name="rssi_thresh"         type="double"   value="-100" />
+    <rosparam param="valid_tx_ant"> [0] </rosparam>
+
+  </node>
+
+  <!-- Image view node -->
+  <!-- <node pkg="bearing_sensor" type="runRqt_image_view.sh" name="image_view"  /> -->
+
+
+</launch>
+

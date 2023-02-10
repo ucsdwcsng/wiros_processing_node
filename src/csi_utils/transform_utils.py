@@ -20,7 +20,6 @@ def fft_mat(rx, freqs, theta, d):
     returns: Theta, Tau steering matrices, pre conjugated.
     so you can compute a profile as such: prof = Theta @ H.T @ Tau
     '''
-
     #wave number
     k = 2*np.pi*np.mean(freqs)/(C_SPEED)
 

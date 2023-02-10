@@ -17,6 +17,11 @@ if __name__ == '__main__':
 
     aoa.comp_file = rospy.get_param("~comp", None)
 
+    aoa.rx_position = np.asarray(rospy.get_param("~rx_position", None)).reshape((-1,2))
+    if aoa.rx_position is None:
+        rospy.logfatal("The parameter rx_position was not set. Please set it with list of 8 floats as detailed in antennas.md")
+
+    
     compensate_channel = rospy.get_param("~compensate_channel", False)
     aoa.apply_nts = rospy.get_param("~correct_tof_offset", False)
 
