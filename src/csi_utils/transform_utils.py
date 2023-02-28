@@ -88,7 +88,7 @@ class full_svd_aoa_sensor:
 
         # number of measurements to add to the matrix
         if self.valid_tx_ant is None:
-            valid_tx_ant = range(H.shape[1])
+            valid_tx_ant = range(H.shape[2])
         else:
             valid_tx_ant = self.valid_tx_ant
 
@@ -195,11 +195,12 @@ class rx_svd_aoa_sensor:
                 self.theta_space,
                 self.tof_space
                 )
+
             self.chanspec_seen.add(chanspec)
             self.svd_window[chanspec] = np.zeros((constants.n_sub[bw],self.rx_pos.shape[0],self.pkt_window),dtype=np.complex128)
             self.svd_roll[chanspec] = 0
 
-        num_meas = H.shape[1]
+        num_meas = H.shape[2]
         c_roll = self.svd_roll[chanspec]
 
         for n in range(num_meas):
@@ -445,3 +446,139 @@ class spotfi_sensor:
                                 + EPS)
         profile = np.abs(profile.reshape((len(self.theta_space), len(self.tof_space))))
         return self.theta_space[argmaxlocal(profile, thresh=0.99, exclude_borders=False)[0,0]], profile
+
+
+def aoa_steering_vec(rx,freqs,theta):
+    #rx: AP antenna positions, n_rx x 2, each antenna should be x,y or theta,r.
+    #freqs: subcarrier frequencies
+    #theta: theta search space
+    #d: d search space
+    
+    #returns: Theta, Tau steering matrices, pre conjugated.
+    #so you can compute a profile as such:
+    # prof = Theta @ H.T @ Tau
+    
+    #wave number
+    k=2*np.pi*np.mean(freqs)/(3e8)
+    rxrad = np.zeros_like(rx)
+    #convert to radial coords
+
+    rxrad[:,0]=np.arctan2(rx[:,1], rx[:,0])
+    rxrad[:,1]=np.linalg.norm(rx, axis=1)
+    #steering matrix for AoA
+    theta = np.repeat((theta[:,np.newaxis]),4,1)
+    #difference in theta between the incoming signal and receiver offset from origin
+    th_d = theta - rxrad[np.newaxis,:,0]
+    #compute relative phase offset from origin and turn to exponential
+    Theta = np.exp(1.0j*k*rxrad[:,1]*np.cos(th_d))
+    Theta = Theta[:,np.newaxis,:]
+    Theta = np.repeat(Theta, freqs.shape[0], axis=1)
+    return Theta
+
+def music_compensation(H,g_aoa,init,rx,freqs,return_loss=True,verbose=False, M=None):
+    '''
+    channel vector convention is to stack subcarriers, then receivers. So the channel vector
+    is size 936, with four blocks of 234 stacked together.
+    H: Channel vectors, 936 x N
+    g_aoa: Ground truth AoA, N
+    init: Initial compensation vector, 936
+    rx: Receiver positions, 4x2
+    freqs: Subcarrier Frequencies, 234
+    
+    M: If you need to run this algorithm many times on the same data (to test initializations)
+    You can pre-compute the inner product matrix as it is done below and pass it as an arg.
+    '''
+    
+    
+    # if the noise space wasn't precomputed then compute it here
+    if M is None:
+        # Uh = np.zeros((NOISE_DIM, H.shape[0],H.shape[1]), dtype=np.complex128)
+        S = aoa_steering_vec(rx, freqs, g_aoa).transpose(0,2,1).reshape((g_aoa.shape[0],-1)).conj()
+        '''
+        #create U^H @ S (noise space adjusted for expected steering vector)
+        for pkt in range(H.shape[0]):
+            u,s,_ = np.linalg.svd(H[pkt])
+            # if pkt == 100:
+            #     pl.draw_channel(u[:,0].reshape((234,4,1), order='F'), title="First Eigenvector")
+            Uh[:,pkt,:] = (u[:,1:4].conj().T*(s[1:,np.newaxis])) @ np.diag(S[pkt,:])
+            # Uh[:,pkt,:] = (u[:,1:4].conj().T) @ np.diag(S[pkt,:])
+        Uh /= np.max(np.abs(Uh))
+        #create PSD matrix (Uh^H @ Uh)
+        Uh = Uh.reshape((-1,Uh.shape[2]))
+        '''
+        
+        for pkt in range(H.shape[0]):
+            H[pkt,:,:] = np.diag(S[pkt,:]) @ H[pkt,:,:]
+        H = H.transpose((1,2,0))
+        H = H.reshape((H.shape[0],-1))
+        u,s,_ = np.linalg.svd(H)
+        
+        s /= np.max(s)
+        u = u[:,1:]#/s[np.newaxis,1:]
+        
+        Uh = u.conj().T
+        
+    
+        M = Uh.conj().T @ Uh
+
+    #c is the compensation angles, phi is the comp. values (complex)
+    c = init
+    phi = np.exp(1.0j*c)
+
+    N_runs = 600
+    l = np.zeros(N_runs)
+    lam = np.identity((M.shape[0]))
+    lam_exit = False
+    diff_exit = False
+    # pbar = tqdm.trange(N_runs)
+    for N in range(N_runs):
+        #re-compute phi
+        phi = np.exp(1.0j*c)
+        
+        #evaluate phi^H @ M @ phi (func we are trying to minimize)
+        f = np.real(phi.conj().T @ M @ phi)#[0,0]
+        #current loss
+        l[N] = f
+
+        #wiringer derivatives - http://dsp.ucsd.edu/~kreutz/PEI-05%20Support%20Files/complex_derivatives.pdf
+        
+        #derivative of phi^h @ M @ phi is is M* phi* 
+        #conjugate derivative is M phi
+        
+        #full derivative is df/dc + df/dc* - https://math.stackexchange.com/questions/2635763/the-derivative-of-complex-quadratic-form
+        
+        # = dphi*/dc* @ df/dphi* + dphi/dc @ df/dphi
+        D = np.real(np.diag(-1.0j*phi.conj()[:,0]) @ M @ phi + np.diag(1.0j*phi[:,0]) @ M.T @ phi.conj()).T
+        
+        #since func is real valued it simplifies to this
+        # D = 2*np.real(np.diag(1.0j*phi[:,0]) @ M.T @ phi.conj().T)
+
+        #update c
+        c_n = c - np.linalg.solve(D.T @ D + lam, D.T @ f)
+        phi_n = np.exp(1.0j*c_n)
+        #new loss
+        f_n = np.real(phi_n.conj().T @ M @ phi_n)#[0,0]
+        
+        #levenberg-marquardt
+        while f_n >= f:
+            if lam[0,0] > 1e20:
+                lam_exit = True
+                break
+            lam *= 10
+            c_n = c - np.linalg.solve(D.T @ D + lam, D.T @ f)
+            phi_n = np.exp(1.0j*c_n)
+            f_n = np.real(phi_n.conj().T @ M @ phi_n)#[0,0]
+            print(f"{N}/{N_runs}: Loss:{f_n[0,0]: 0.5f}, \u03BB:{lam[0,0]}")
+            # pbar.set_description(f"{f_n[0,0]: 0.1f}, {lam[0,0]}")
+        if f - f_n < 1e-3:
+            diff_exit = True
+        if lam_exit or diff_exit:
+            break
+        
+        lam *= 0.7
+        c = np.angle(phi_n)
+        print(f"{N}/{N_runs}: Loss:{f_n[0,0]: 0.5f}, \u03BB:{lam[0,0]}")
+    if return_loss:
+        return [np.exp(1.0j*c), f_n[0,0]]
+    else:
+        return np.exp(1.0j*c)
