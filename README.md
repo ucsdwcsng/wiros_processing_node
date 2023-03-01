@@ -1,6 +1,10 @@
 # CSI tools
 
-This node provides utilities for calculating Angle-of-Arrival (AoA) from input CSI messages. Two scripts are provided which use these tools:
+This node provides utilities for calculating Angle-of-Arrival (AoA) from input CSI messages. 
+
+< Go back to the [index page](https://github.com/ucsdwcsng/WiROS)
+
+Two scripts are provided which use these tools:
 
 - `aoa_node.py` is a ROS node that takes in input CSI and publishes resulting AoA to a topic, as well as optionally publishing images of AoA profiles and plots of the channel.
 
@@ -88,7 +92,7 @@ The simplest way to measure the phase bias at the receiver is to ensure that the
 
 2. Connect the attenuators to the input of the splitter, and one of the outputs of the other AC86u to the attenuators. Ideally you should terminate the other 3 antenna ports to cancel any crosstalk.
 
-3. Start [CSI collection, TODO](Link to final repo goes here) at both the transmitter and receiver ends. The transmitter should have packet injection turned on and the receiver should set its MAC filter to the address the transmitter is injecting with.
+3. Start [CSI collection](https://github.com/ucsdwcsng/wiros_csi_node) at both the transmitter and receiver ends. The transmitter should have packet injection turned on and the receiver should set its MAC filter to the address the transmitter is injecting with.
 
 4. Save the CSI data measured to a bag file.
 
@@ -127,7 +131,7 @@ Stacks all transmitters and subcarriers over the last 8 packets and takes SVD. T
 Standard 2D-FFT. Takes median AoA across the transmitters and optionally returns the profile of the last transmitter.
 
 ***rx_svd***
-Takes the first principle component over the last 8 packets of each 4x32 submatrix across subcarriers, giving a 234x4x1 channel and computes fft.
+Takes the first principle component over the last 8 packets of each 4x32 submatrix across subcarriers, giving a 234x4x1 channel and computes fft. This provides a best trade-off between accruacy and compute effecieny. For more details, see [2]
 
 ***full_svd***
 Stacks receivers across subcarriers and takes first principle component over the last 8 packets of the 936x32 matrix, giving a 936x1 = 234x4x1 channel and computes fft.
@@ -135,9 +139,8 @@ Stacks receivers across subcarriers and takes first principle component over the
 ***music***
 Stacks receivers across subcarriers and computes the 936 x 935 null space, then computes the reciprocal of the projection of the steering vectors onto the channel null space. Very slow.
 
-***spotfi***
-
-TODO
+***spotfi [1]***
+Performs super-resolution (increasing the rank of the measurements matrix) across antennas and subcarriers to better resolve multipath components of a signal from the direct path. Additionally, performs MUSIC on the super-resolved measurements. However, this is a compute intensive method unsuitable for real-time operations. 
 
 ## Citations: 
 1. Kotaru, Manikanta, et al. "Spotfi: Decimeter level localization using wifi." Proceedings of the 2015 ACM Conference on Special Interest Group on Data Communication. 2015.
