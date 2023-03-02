@@ -115,11 +115,11 @@ This method allows you to compute compensation on-the-fly with only the ground-t
 
 4.  Compute the ground-truth AoA using the estimated pose of the robot and the known transmitter location. Exact steps for doing this depend on the SLAM system / odometry you are using.
 
-5.  Export the csi bag file to a .npz file using `generate_channel_files.py`
+5.  Export the csi bag file to a .npz file using [`generate_channel_files.py`](scripts/generate_channel_files.py)
 
 6.  Synchronize the computed ground AoAs to the received channels.
 
-7.  
+7.  Input the ground truth AoA from step 6 and the channels from step 5 into [`dynamic_compensation.py`](scripts/dynamic_compensation.py)
 
 ## Post-Processing a Bag File
 
@@ -154,7 +154,7 @@ Stacks receivers across subcarriers and takes first principle component over the
 Stacks receivers across subcarriers and computes the 936 x 935 null space, then computes the reciprocal of the projection of the steering vectors onto the channel null space. Very slow.
 
 ***spotfi [1]***
-Performs super-resolution (increasing the rank of the measurements matrix) across antennas and subcarriers to better resolve multipath components of a signal from the direct path. Additionally, performs MUSIC on the super-resolved measurements. However, this is a compute intensive method unsuitable for real-time operations. 
+Performs super-resolution (increasing the rank of the measurements matrix) across antennas and subcarriers to better resolve multipath components of a signal from the direct path. Additionally, performs MUSIC on the super-resolved measurements. NOTE: This is a compute intensive method unsuitable for real-time operations and does not work for non-linear antenna arrays. 
 
 ## Citations: 
 1. Kotaru, Manikanta, et al. "Spotfi: Decimeter level localization using wifi." Proceedings of the 2015 ACM Conference on Special Interest Group on Data Communication. 2015.
