@@ -103,7 +103,7 @@ The simplest way to measure the phase bias at the receiver is to ensure that the
 
 Compensation files follow the naming convention `{IP}-{chanspec}.npy`
 
-### Dynamic Compensatione
+### Dynamic Compensation
 
 This method allows you to compute compensation on-the-fly with only the ground-truth AoA of the incoming packets known. The below method for getting ground truth AoA is as described in the publication.
 
