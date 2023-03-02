@@ -57,7 +57,8 @@ H = H.transpose((1,2,0))
 H = H.reshape((H.shape[0],-1))
 u,s,_ = np.linalg.svd(H)
 s /= np.max(s)
-
+import pdb
+pdb.set_trace()
 u = u[:,1:]
 
 

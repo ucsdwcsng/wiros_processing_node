@@ -99,9 +99,23 @@ The simplest way to measure the phase bias at the receiver is to ensure that the
 
 Compensation files follow the naming convention `{IP}-{chanspec}.npy`
 
-### Dynamic Compensation File
+### Dynamic Compensatione
 
-TODO
+This method allows you to compute compensation on-the-fly with only the ground-truth AoA of the incoming packets known. The below method for getting ground truth AoA is as described in the publication.
+
+1.  Set up a device (need not be another AC86u) in the environment in a known location sending beacon packets.
+
+2.  Attach the listening device to your robot in the configuration you normally use to collect AoAs.
+
+3.  Slowly drive the robot in a small circle to collect CSI from a large angle diversity.
+
+4.  Compute the ground-truth AoA using the estimated pose of the robot and the known transmitter location. Exact steps for doing this depend on the SLAM system / odometry you are using.
+
+5.  Export the csi bag file to a .npz file using `generate_channel_files.py`
+
+6.  Synchronize the computed ground AoAs to the received channels.
+
+7.  
 
 ## Post-Processing a Bag File
 
