@@ -3,6 +3,7 @@ import numpy as np
 
 import csi_utils.transform_utils as transforms
 import csi_utils.constants as constants
+import csi_utils.comp_utils as comp_utils
 import rosbag
 
 import matplotlib.pyplot as plt
@@ -75,7 +76,7 @@ for tx1 in range(4):
     for tx2 in range(4):
         for tx3 in range(4):
             initc = np.kron(np.asarray([1.0,ru_4[tx1],ru_4[tx2],ru_4[tx3]])[:,np.newaxis],np.ones((freqs.shape[0],1)))
-            c, l = transforms.music_compensation(H,g_aoa,initc,rx,freqs,return_loss=True,verbose=True, M=M)
+            c, l = comp_utils.music_compensation(H,g_aoa,initc,rx,freqs,return_loss=True,verbose=True, M=M)
             c = c.conj()
             c = c.reshape((1,4,freqs.shape[0])).T
             cs.append(c)
@@ -94,7 +95,7 @@ cs = np.load(join(data_dir, "result-comps.npy"))
 # initc = np.ones((208,1))
 # initc = np.random.uniform(0,2*np.pi,(936,1))
 
-# c, l = transforms.music_compensation(H,g_aoa,initc,rx,freqs,return_loss=True,verbose=True,M=M)
+# c, l = comp_utils.music_compensation(H,g_aoa,initc,rx,freqs,return_loss=True,verbose=True,M=M)
 # c = c.conj()
 # c = c.reshape((1,4,52)).T
 # '''

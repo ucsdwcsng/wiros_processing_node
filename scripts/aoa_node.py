@@ -24,6 +24,7 @@ if __name__ == '__main__':
         comp_path = None
     if comp_path is not None:
         aoa.comp_path = comp_path
+        print(comp_path)
         if os.path.isdir(comp_path):
             aoa.comp = {}
             aoa.use_comp_folder = True

@@ -137,7 +137,6 @@ class aoa_node:
             self.last_channel = pipeline_utils.extract_csi(msg, self.comp[comp_spec], self.apply_nts, self.valid_tx_ant)
         else:
             self.last_channel = pipeline_utils.extract_csi(msg, self.comp, self.apply_nts, self.valid_tx_ant)
-        print(self.comp.keys())
         self.last_mac = mac
         self.last_rssi = msg.rssi
         

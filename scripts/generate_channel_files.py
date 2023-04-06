@@ -136,6 +136,6 @@ for key in channels:
         np.savez(join(out, f"{key}.npz"), **f_dict)
         print(f"Created {join(out, f'{key}.npz')}")
     if export_mat:
-        sio.savemat(join(out, f"{key}.mat"), f_dict)
+ude-ph        sio.savemat(join(out, f"{key}.mat"), f_dict)
         print(f"Created {join(out, f'{key}.mat')}")
                 
