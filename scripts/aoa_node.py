@@ -20,7 +20,7 @@ if __name__ == '__main__':
     do_comp = rospy.get_param("~compensate_channel", True)
 
     if not do_comp:
-        ROS_WARN("Turning off compensation.")
+        rospy.logwarn("Turning off compensation.")
         comp_path = None
     if comp_path is not None:
         aoa.comp_path = comp_path
@@ -42,6 +42,7 @@ if __name__ == '__main__':
 
     aoa.pub_prof = rospy.get_param("~publish_profile", True)
     aoa.pub_channel = rospy.get_param("~publish_channel", True)
+    aoa.pub_rel_channel = rospy.get_param("~relative_phase", True)
     aoa.use_color = rospy.get_param("~color_profile", True)
     aoa.prof_tx_id = rospy.get_param("~profile_tx_id", 0)
 

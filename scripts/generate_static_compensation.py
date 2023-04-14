@@ -48,7 +48,7 @@ for key in channels:
 	    maxk = key
 	    maxlen = len(channels[key])
 if maxk == '':
-	rospy.logfatal("No CSI in bag file")
+	print("No CSI in bag file")
 	exit(1)
 
 ksplit = maxk.split("-")
