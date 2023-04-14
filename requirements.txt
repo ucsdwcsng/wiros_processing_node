@@ -1,4 +1,2 @@
-sys
 numpy
-time
 matplotlib
