@@ -3,8 +3,6 @@ import csi_utils.constants as constants
 eps = np.finfo(float).eps
 import matplotlib.pyplot as plt
 
-from scipy.signal import argrelmax
-
 C_SPEED = 3e8
 SPOTFI_THRESH = 0.1
 EPS = np.finfo('float').eps
