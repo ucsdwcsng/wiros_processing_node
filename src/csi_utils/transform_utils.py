@@ -1,6 +1,5 @@
 import numpy as np
 import csi_utils.constants as constants
-from skimage import feature as feat
 eps = np.finfo(float).eps
 import matplotlib.pyplot as plt
 
@@ -38,8 +37,9 @@ def fft_mat(rx, freqs, theta, d):
 
 def argmaxlocal(im, thresh=0.0, exclude_borders=True):
    if im.shape[1] > 1:
-       return np.fliplr(np.flipud(feat.peak_local_max(im.T, indices=True, exclude_border=exclude_borders,
-                                                      min_distance=5, threshold_rel=thresh)))
+       #return np.fliplr(np.flipud(feat.peak_local_max(im.T, indices=True, exclude_border=exclude_borders,
+       #                                               min_distance=5, threshold_rel=thresh)))
+       return np.asarray(np.unravel_index(np.argmax(im, axis=None), im.shape))[:,np.newaxis]
    else:
        return np.asarray([[np.argmax(im), 0]])
 
