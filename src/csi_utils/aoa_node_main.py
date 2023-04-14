@@ -134,7 +134,7 @@ class aoa_node:
                     if os.path.isfile(spec_file):
                         self.comp[comp_spec] = np.load(spec_file)
                     else:
-                        rospy.logerror(f"Tried to load compensation for {comp_spec[0]} on channel {comp_spec[1]}\nbut {spec_file} does not exist. Skipping for now.")
+                        rospy.logerr(f"Tried to load compensation for {comp_spec[0]} on channel {comp_spec[1]}\nbut {spec_file} does not exist. Skipping for now.")
                         self.comp[comp_spec] = 1.0
                 self.last_channel = pipeline_utils.extract_csi(msg, self.comp[comp_spec], self.apply_nts, self.valid_tx_ant)
             else:
