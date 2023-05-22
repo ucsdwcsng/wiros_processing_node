@@ -67,9 +67,9 @@ class aoa_node:
 
     def algo_selector(self, sensor):
         if self.algo == 'full_svd':
-            sensor = transform_utils.full_svd_aoa_sensor(self.rx_position, self.valid_tx_ant,
+            sensor = transform_utils.full_svd_aoa_sensor(self.rx_position,
                                                          self._theta_range, self._tau_range,
-                                                         self.pkt_smoothing_window)
+                                                         self.pkt_smoothing_window, valid_tx_ant=self.valid_tx_ant)
         elif self.algo == 'rx_svd':
             sensor = transform_utils.rx_svd_aoa_sensor(self.rx_position, self._theta_range,
                                                        self._tau_range, self.pkt_smoothing_window)
@@ -112,6 +112,7 @@ class aoa_node:
         
     #callback
     def csi_callback(self, msg):
+        tic = time.time()
         if msg.rssi < self.rssi_threshold:
             return
         
@@ -134,7 +135,7 @@ class aoa_node:
                     if os.path.isfile(spec_file):
                         self.comp[comp_spec] = np.load(spec_file)
                     else:
-                        rospy.logerror(f"Tried to load compensation for {comp_spec[0]} on channel {comp_spec[1]}\nbut {spec_file} does not exist. Skipping for now.")
+                        rospy.logerr(f"Tried to load compensation for {comp_spec[0]} on channel {comp_spec[1]}\nbut {spec_file} does not exist. Skipping for now.")
                         self.comp[comp_spec] = 1.0
                 self.last_channel = pipeline_utils.extract_csi(msg, self.comp[comp_spec], self.apply_nts, self.valid_tx_ant)
             else:
@@ -156,6 +157,10 @@ class aoa_node:
             traceback.print_exc()
             return
 
+        toc = time.time()
+        print(f"extract time: {toc - tic:.3e}")
+
+        tic = time.time()
         # TODO Add AoD
         angle_msg = Bearing()
         angle_msg.header = msg.header
@@ -170,22 +175,33 @@ class aoa_node:
         
         self._aoa_pub.publish(angle_msg)
 
+        toc = time.time()
+        print(f"publish time: {toc - tic:.3e}")
+
+        tic = time.time()
         # Publish the AoA-ToF profile
         if prof is not None and self.pub_prof:
             if len(prof.shape) == 3:
                 prof = prof[:,:,self.prof_tx_id]
-            if self.use_color:
-                profim = (self.accept_color(prof/np.max(prof))[:,:,:3] * 255).astype(np.uint8)
-                peak_idx = int((self._theta_range.shape[0]-1)*(self.last_aoa - self._theta_range[0])/(self._theta_range[-1] - self._theta_range[0]))
-                profim[peak_idx,:,:] = [255,0,0]
+                if self.use_color:
+                    profim = (self.accept_color(prof/np.max(prof))[:,:,:3] * 255).astype(np.uint8)
+                    peak_idx = int((self._theta_range.shape[0]-1)*(self.last_aoa - self._theta_range[0])/(self._theta_range[-1] - self._theta_range[0]))
+                    profim[peak_idx,:,:] = [255,0,0]
+                    im_msg = io_utils.image_message(profim, msg.header.stamp, 'rgb8')
+                    self._prof_pub.publish(im_msg)
+                else:
+                    profim = (255*prof/np.max(prof)).astype(np.uint8)
+                    im_msg = io_utils.image_message(profim, msg.header.stamp, 'mono8')
+                    self._prof_pub.publish(im_msg)
+            else:
+                profim = io_utils.draw_1d_profile(prof, self._theta_range)
                 im_msg = io_utils.image_message(profim, msg.header.stamp, 'rgb8')
                 self._prof_pub.publish(im_msg)
-            else:
-                profim = (255*prof/np.max(prof)).astype(np.uint8)
-                im_msg = io_utils.image_message(profim, msg.header.stamp, 'mono8')
-                self._prof_pub.publish(im_msg)
 
-        
+        toc = time.time()
+        print(f"prof time: {toc - tic:.3e}")
+
+        tic = time.time()
         # Publish the magnitude and phase of channel
         if self.pub_channel and self.last_channel is not None:
             if self.pub_rel_channel:
@@ -196,6 +212,8 @@ class aoa_node:
             im_msg = io_utils.image_message(channel_im, msg.header.stamp, 'rgb8')
             self._channel_pub.publish(im_msg)
 
+        toc = time.time()
+        print(f"chan time: {toc - tic:.3e}")
         rospy.loginfo("RSSI %f, AOA %f", msg.rssi, self.last_aoa)
 
         
@@ -225,11 +243,6 @@ class aoa_node:
                                         self.num_theta_steps)
         self._tau_range = np.linspace(self.d_thresh[0], self.d_thresh[1], self.num_d_steps)
         self._aoa_pub = rospy.Publisher('/bearing', Bearing, queue_size=3)
-
-        if self.pub_prof and self.algo in constants.no_prof_algos:
-            rospy.logerr(f"pub_prof set to True but algo {self.algo} does not generate a profile")
-            rospy.loginfo("Turning off pub_prof")
-            self.pub_prof = False
 
         self._prof_pub = rospy.Publisher('/prof', Image, queue_size=3)
         self._channel_pub = rospy.Publisher('/channel', Image, queue_size=3)

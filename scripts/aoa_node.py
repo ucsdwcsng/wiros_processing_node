@@ -3,6 +3,7 @@ import rospy
 from csi_utils.aoa_node_main import aoa_node
 import numpy as np
 import os
+import sys
 EPS = np.finfo('float').eps
 
 
@@ -31,6 +32,9 @@ if __name__ == '__main__':
         elif os.path.isfile(comp_path):
             aoa.comp = np.load(comp_path)
             aoa.use_comp_folder = False
+        else:
+            print(f"fatal: compensation was turned on, but the provided path {comp_path} does not exist.")
+            sys.exit(1)
 
     aoa.rx_position = np.asarray(rospy.get_param("~rx_position", None)).reshape((-1,2))
     if aoa.rx_position is None:
