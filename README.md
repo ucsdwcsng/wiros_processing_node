@@ -145,7 +145,7 @@ Stacks all transmitters and subcarriers over the last 8 packets and takes SVD. T
 Standard 2D-FFT. Takes median AoA across the transmitters and optionally returns the profile of the last transmitter.
 
 ***rx_svd***
-Takes the first principle component over the last 8 packets of each 4x32 submatrix across subcarriers, giving a 234x4x1 channel and computes fft. This provides a best trade-off between accruacy and compute effecieny. For more details, see [2]
+Takes the first principle component over the last 8 packets of each 4x32 submatrix across subcarriers, giving a 234x4x1 channel and computes fft. This provides a best trade-off between accuracy and compute efficiency. For more details, see [2]
 
 ***full_svd***
 Stacks receivers across subcarriers and takes first principle component over the last 8 packets of the 936x32 matrix, giving a 936x1 = 234x4x1 channel and computes fft.
@@ -158,5 +158,5 @@ Performs super-resolution (increasing the rank of the measurements matrix) acros
 
 ## Citations: 
 1. Kotaru, Manikanta, et al. "Spotfi: Decimeter level localization using wifi." Proceedings of the 2015 ACM Conference on Special Interest Group on Data Communication. 2015.
-2. Arun, Aditya, et al. "ViWiD: Leveraging WiFi for Robust and Resource-Efficient SLAM." arXiv preprint arXiv:2209.08091 (2022).
+2. "WAIS: Leveraging WiFi for Online and Resource-Efficient SLAM"
 3. Blanco, Alejandro, et al. "Accurate ubiquitous localization with off-the-shelf ieee 802.11 ac devices." The 19th Annual International Conference on Mobile Systems, Applications, and Services (MobiSys 2021). 2021.
