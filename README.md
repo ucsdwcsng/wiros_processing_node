@@ -2,7 +2,7 @@
 
 This node provides utilities for calculating Angle-of-Arrival (AoA) from input CSI messages. 
 
-< Go back to the [index page](https://github.com/ucsdwcsng/WiROS)
+< Go back to the [index page](https://anonymous.4open.science/r/WiROS-85F9/)
 
 Two scripts are provided which use these tools:
 
@@ -18,7 +18,7 @@ All of the methods we use to compute AoA have the same fundamental idea, which i
 
 ## Installing the ROS package
 
-Install the [`rf_msgs`](https://github.com/ucsdwcsng/rf_msgs) package if you haven't already. It provides CSI and AoA message formats used by this package.
+Install the [`rf_msgs`](https://anonymous.4open.science/r/rf_msgs-D2F5/) package if you haven't already. It provides CSI and AoA message formats used by this package.
 
 Place this repo in a catkin workspace in the `src` directory along with `rf_msgs`. Then build with:
 ```
@@ -92,7 +92,7 @@ The simplest way to measure the phase bias at the receiver is to ensure that the
 
 2. Connect the attenuators to the input of the splitter, and one of the outputs of the other AC86u to the attenuators. Ideally you should terminate the other 3 antenna ports to cancel any crosstalk.
 
-3. Start [CSI collection](https://github.com/ucsdwcsng/wiros_csi_node) at both the transmitter and receiver ends. The transmitter should have packet injection turned on and the receiver should set its MAC filter to the address the transmitter is injecting with.
+3. Start [CSI collection](https://anonymous.4open.science/r/wiros_csi_node-7985/) at both the transmitter and receiver ends. The transmitter should have packet injection turned on and the receiver should set its MAC filter to the address the transmitter is injecting with.
 
 4. Save the CSI data measured to a bag file.
 
