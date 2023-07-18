@@ -116,7 +116,7 @@ for idx, a in enumerate(aps):
     ap_file = np.load(join(PATH, f'gnd/gnd_{a}.npz'))
     ap_pos[idx,:] = ap_file['xy']
     ap_th[idx] = ap_file['yaw']
-    prediction_file = np.load(join(PATH,f'pred/{a}-synced.npz'))
+    prediction_file = np.load(join(PATH,f'pred/{a}-synced_aoa.npz'))
 
     rssi.append(prediction_file['rssi'])
 
