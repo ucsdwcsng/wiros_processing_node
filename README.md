@@ -58,11 +58,13 @@ rosrun bearing_sensor aoa_node _name:=aoa_node --prof --color --algo {algorithm 
 
 - `d_thresh` : Limits of the range of ToF to search over in meters.
 
-- `pkt_smoothing_window` : Number of past packets to average over for a given transmitter, only used in algorithms which do this smoothing. This should be determined by how fast you expect the channel to change and how fast the target devices are transmitting.
+- `smoothing_window` : Number of past packets to average over for a given transmitter, only used in algorithms which do this smoothing. This should be determined by how fast you expect the channel to change and how fast the target devices are transmitting.
 
 - `rssi_thresh` : Only evaluate CSI with RSSI above this limit. Filters out poor-quality measurements.
 
 - `valid_tx_ant` : Which transmitters to use. Some devices may advertise 4 transmitters in the training field but will leave of the slots empty.
+
+- `correct_tof_offset` : Try to shift TOF to 0 by fitting a complex exponential to subcarrier phase and then dividing it out. Helps remove CFO, NTS offset.
 
 ### Device-Related
 
@@ -72,11 +74,12 @@ rosrun bearing_sensor aoa_node _name:=aoa_node --prof --color --algo {algorithm 
 
 ### Output-Related
 
-- `pub_prof` : Publish an image of the profile on `/prof`. Can be viewed through RViz or similar.
-- `pub_channel` : Publish channel magnitude and phase on `/channel`.
-- `use_color` : Nicer looking profile image.
-- `prof_tx_id` : Which transmitter field's profile should be displayed. Only meaningful for AoA algorithms that don't average transmitters together, like `fft`.
-- `chan_tx_id` : Same as above for the channel plotting feature.
+- `publish_profile` : Publish an image of the profile on `/prof`. Can be viewed through RViz or similar.
+- `publish_channel` : Publish channel magnitude and phase on `/channel`.
+- `relative_phase` : If `True`, the published channel image will have the 1st antenna channel divided out.
+- `color_profile` : Nicer looking profile image.
+- `profile_tx_id` : Which transmitter field's profile should be displayed. Only meaningful for AoA algorithms that don't average transmitters together, like `fft`.
+- `channel_tx_id` : Same as above for the channel plotting feature.
 
 ## Collecting Compensation Data
 
