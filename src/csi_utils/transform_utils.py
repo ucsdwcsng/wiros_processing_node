@@ -55,6 +55,7 @@ class full_svd_aoa_sensor:
         self.svd_window = {}
         self.svd_roll = {}
         self.valid_tx_ant = valid_tx_ant
+        self.prof_dim=2
 
     def __call__(self, H, chanspec):
         '''
@@ -126,6 +127,7 @@ class full_music_aoa_sensor:
         self.Tau = {}
         self.svd_window = {}
         self.svd_roll = {}
+        self.prof_dim=2
 
     def __call__(self, H, chanspec):
         bw = chanspec[1]
@@ -183,6 +185,7 @@ class rx_svd_aoa_sensor:
         self.Tau = {}
         self.svd_window = {}
         self.svd_roll = {}
+        self.prof_dim=2
 
     def __call__(self, H, chanspec):
         bw = chanspec[1]
@@ -225,6 +228,7 @@ class fft_aoa_sensor:
         self.Theta = {}
         self.Tau = {}
         self.valid_tx_ant = valid_tx_ant
+        self.prof_dim=2
 
         self.profile_tx_id = 0
 
@@ -268,6 +272,7 @@ class music_aoa_sensor_1d:
         self.Theta = {}
         self.svd_window = {}
         self.svd_roll = {}
+        self.prof_dim=1
 
     def __call__(self, H, chanspec):
 
@@ -309,6 +314,7 @@ class aoa_sensor_1d:
         self.Theta = {}
         self.svd_window = {}
         self.svd_roll = {}
+        self.prof_dim=1
 
         self.return_profile = False
 

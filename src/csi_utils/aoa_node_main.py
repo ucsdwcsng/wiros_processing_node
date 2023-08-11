@@ -181,8 +181,9 @@ class aoa_node:
         tic = time.time()
         # Publish the AoA-ToF profile
         if prof is not None and self.pub_prof:
-            if len(prof.shape) == 3:
-                prof = prof[:,:,self.prof_tx_id]
+            if self.aoa_sensors[mac].prof_dim == 2:
+                if len(prof.shape) == 3:
+                    prof = prof[:,:,self.prof_tx_id]
                 if self.use_color:
                     profim = (self.accept_color(prof/np.max(prof))[:,:,:3] * 255).astype(np.uint8)
                     peak_idx = int((self._theta_range.shape[0]-1)*(self.last_aoa - self._theta_range[0])/(self._theta_range[-1] - self._theta_range[0]))
@@ -206,7 +207,6 @@ class aoa_node:
         if self.pub_channel and self.last_channel is not None:
             if self.pub_rel_channel:
                 channel_im = io_utils.draw_channel_image(self.last_channel / self.last_channel[:,0,np.newaxis,:])
-                
             else:                                    
                 channel_im = io_utils.draw_channel_image(self.last_channel)
             im_msg = io_utils.image_message(channel_im, msg.header.stamp, 'rgb8')

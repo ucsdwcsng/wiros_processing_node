@@ -42,7 +42,7 @@ def draw_1d_profile(prof, theta):
 
     
 def draw_channel_image(channel):
-    fig = Figure(figsize=(10, 10))
+    fig = Figure(figsize=(10,10))
     canvas = FigureCanvas(fig)
     num_tx_slots = channel.shape[2]
     for i in range(num_tx_slots):
