@@ -104,7 +104,7 @@ The simplest way to measure the phase bias at the receiver is to ensure that the
     rosrun csi_tools generate_static_compensation.py BAG_PATH
     ```
 
-Compensation files follow the naming convention `{IP}-{chanspec}.npy`
+Compensation files follow the naming convention `{IP}-{chanspec}.npy`. NOTE: The above file conjugates the received CSI matrix. 
 
 ### Dynamic Compensation
 
