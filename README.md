@@ -97,7 +97,7 @@ The simplest way to measure the phase bias at the receiver is to ensure that the
 
 3. Start [CSI collection](https://github.com/ucsdwcsng/wiros_csi_node) at both the transmitter and receiver ends. The transmitter should have packet injection turned on and the receiver should set its MAC filter to the address the transmitter is injecting with.
 
-4. Save the CSI data measured to a bag file.
+4. Save the CSI data measured to a bag file, via `rosbag record /csi -O compensation_csi.bag`
 
 5. Use the rosbag processing script to create the compensation file:
     ```
