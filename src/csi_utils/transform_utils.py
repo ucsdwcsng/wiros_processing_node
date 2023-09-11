@@ -1,10 +1,7 @@
 import numpy as np
 import csi_utils.constants as constants
-from skimage import feature as feat
 eps = np.finfo(float).eps
 import matplotlib.pyplot as plt
-
-from scipy.signal import argrelmax
 
 C_SPEED = 3e8
 SPOTFI_THRESH = 0.1
@@ -38,13 +35,14 @@ def fft_mat(rx, freqs, theta, d):
 
 def argmaxlocal(im, thresh=0.0, exclude_borders=True):
    if im.shape[1] > 1:
-       return np.fliplr(np.flipud(feat.peak_local_max(im.T, indices=True, exclude_border=exclude_borders,
-                                                      min_distance=5, threshold_rel=thresh)))
+       #return np.fliplr(np.flipud(feat.peak_local_max(im.T, indices=True, exclude_border=exclude_borders,
+       #                                               min_distance=5, threshold_rel=thresh)))
+       return np.asarray(np.unravel_index(np.argmax(im, axis=None), im.shape))[:,np.newaxis]
    else:
        return np.asarray([[np.argmax(im), 0]])
 
 class full_svd_aoa_sensor:
-    def __init__(self, rx_pos, valid_tx_ant, theta_space, tof_space, pkt_window=40):
+    def __init__(self, rx_pos, theta_space, tof_space, pkt_window=40, valid_tx_ant=None):
         self.thetas = {}
         self.taus = {}
         self.rx_pos = rx_pos
@@ -57,6 +55,7 @@ class full_svd_aoa_sensor:
         self.svd_window = {}
         self.svd_roll = {}
         self.valid_tx_ant = valid_tx_ant
+        self.prof_dim=2
 
     def __call__(self, H, chanspec):
         '''
@@ -128,6 +127,7 @@ class full_music_aoa_sensor:
         self.Tau = {}
         self.svd_window = {}
         self.svd_roll = {}
+        self.prof_dim=2
 
     def __call__(self, H, chanspec):
         bw = chanspec[1]
@@ -185,6 +185,7 @@ class rx_svd_aoa_sensor:
         self.Tau = {}
         self.svd_window = {}
         self.svd_roll = {}
+        self.prof_dim=2
 
     def __call__(self, H, chanspec):
         bw = chanspec[1]
@@ -217,7 +218,7 @@ class rx_svd_aoa_sensor:
         return self.theta_space[argmaxlocal(prof, thresh=0.99, exclude_borders=False)[0,0]], prof
 
 class fft_aoa_sensor:
-    def __init__(self, rx_pos, theta_space, tof_space, valid_tx_ant='all'):
+    def __init__(self, rx_pos, theta_space, tof_space, valid_tx_ant=None):
         self.thetas = {}
         self.taus = {}
         self.rx_pos = rx_pos
@@ -227,6 +228,7 @@ class fft_aoa_sensor:
         self.Theta = {}
         self.Tau = {}
         self.valid_tx_ant = valid_tx_ant
+        self.prof_dim=2
 
         self.profile_tx_id = 0
 
@@ -245,7 +247,7 @@ class fft_aoa_sensor:
         aoas = []
         prof_to_ret = None
 
-        tx_it = range(H.shape[0]) if self.valid_tx_ant == 'all' else self.valid_tx_ant
+        tx_it = range(H.shape[0]) if self.valid_tx_ant is None else self.valid_tx_ant
         for idx in tx_it:
             # skip packets across transmit antennas which have zero information
             # last subcarrier carries some data interestingly
@@ -270,6 +272,7 @@ class music_aoa_sensor_1d:
         self.Theta = {}
         self.svd_window = {}
         self.svd_roll = {}
+        self.prof_dim=1
 
     def __call__(self, H, chanspec):
 
@@ -311,6 +314,7 @@ class aoa_sensor_1d:
         self.Theta = {}
         self.svd_window = {}
         self.svd_roll = {}
+        self.prof_dim=1
 
         self.return_profile = False
 

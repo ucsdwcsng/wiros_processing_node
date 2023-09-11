@@ -3,6 +3,7 @@ import rospy
 from csi_utils.aoa_node_main import aoa_node
 import numpy as np
 import os
+import sys
 EPS = np.finfo('float').eps
 
 
@@ -18,7 +19,7 @@ if __name__ == '__main__':
     
     comp_path = rospy.get_param("~comp", None)
     do_comp = rospy.get_param("~compensate_channel", True)
-
+    
     if not do_comp:
         rospy.logwarn("Turning off compensation.")
         comp_path = None
@@ -31,6 +32,9 @@ if __name__ == '__main__':
         elif os.path.isfile(comp_path):
             aoa.comp = np.load(comp_path)
             aoa.use_comp_folder = False
+        else:
+            print(f"fatal: compensation was turned on, but the provided path {comp_path} does not exist.")
+            sys.exit(1)
 
     aoa.rx_position = np.asarray(rospy.get_param("~rx_position", None)).reshape((-1,2))
     if aoa.rx_position is None:
@@ -41,10 +45,11 @@ if __name__ == '__main__':
     aoa.apply_nts = rospy.get_param("~correct_tof_offset", False)
 
     aoa.pub_prof = rospy.get_param("~publish_profile", True)
-    aoa.pub_channel = rospy.get_param("~publish_channel", True)
-    aoa.pub_rel_channel = rospy.get_param("~relative_phase", True)
+    aoa.pub_channel = rospy.get_param("~publish_channel", False)
+    aoa.pub_rel_channel = rospy.get_param("~relative_phase", False)
     aoa.use_color = rospy.get_param("~color_profile", True)
     aoa.prof_tx_id = rospy.get_param("~profile_tx_id", 0)
+    aoa.chan_tx_id = rospy.get_param("~channel_tx_id", 0)
 
     aoa.num_theta_steps = rospy.get_param("~num_theta_steps", 180)
     aoa.num_d_steps = rospy.get_param("~num_d_steps", 100)

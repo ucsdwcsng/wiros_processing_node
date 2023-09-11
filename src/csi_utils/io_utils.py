@@ -24,8 +24,25 @@ def image_message(im_arr, t, im_type):
             
     return ros_image
 
+def draw_1d_profile(prof, theta):
+    fig = Figure(figsize=(2, 2))
+    canvas = FigureCanvas(fig)
+
+    ax = fig.add_subplot()
+    ax.get_yaxis().set_visible(False)
+    ax.plot(theta,prof)
+    
+    fig.set_tight_layout(True)
+    
+    canvas.draw()  # draw the canvas, cache the renderer
+    
+    width, height = fig.get_size_inches() * fig.get_dpi()
+    image = np.frombuffer(canvas.tostring_rgb(), dtype='uint8').reshape((int(height), int(width), 3))
+    return image
+
+    
 def draw_channel_image(channel):
-    fig = Figure(figsize=(10, 10))
+    fig = Figure(figsize=(10,10))
     canvas = FigureCanvas(fig)
     num_tx_slots = channel.shape[2]
     for i in range(num_tx_slots):
