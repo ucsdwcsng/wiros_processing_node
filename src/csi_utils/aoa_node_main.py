@@ -12,10 +12,13 @@ import csi_utils.pipeline_utils as pipeline_utils
 import csi_utils.io_utils as io_utils
 from rf_msgs.msg import Wifi, Bearing
 from sensor_msgs.msg import Image
+from geometry_msgs.msg import PoseStamped, Pose
+from visualization_msgs.msg import Marker
 from csi_tools.srv import SaveChannel, SaveChannelResponse
 import traceback
 import matplotlib.cm as cm
-
+from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
+from matplotlib.figure import Figure
 
 class aoa_node:
     def __init__(self):
@@ -58,6 +61,7 @@ class aoa_node:
         self._aoa_pub = None
         self._prof_pub = None
         self._channel_pub = None
+        self._bearing_pose_pub = None
 
         #values filled in on message process
         self.last_channel = None
@@ -92,6 +96,40 @@ class aoa_node:
             rospy.logerr(f"Incorrect Algorithm {self.algo} chosen")
 
         return sensor
+
+
+    def draw_prof_image(self, prof):
+        if self.use_color:
+            profim = (self.accept_color(prof/np.max(prof))[:,:,:3] * 255).astype(np.uint8)
+            peak_idx = int((self._theta_range.shape[0]-1)*(self.last_aoa - self._theta_range[0])/(self._theta_range[-1] - self._theta_range[0]))
+            profim[peak_idx,:,:] = [255,0,0]
+        else:
+            profim = (255*prof/np.max(prof)).astype(np.uint8)
+
+        fig = Figure(figsize=(10, 10))
+        canvas = FigureCanvas(fig)
+        axs = fig.add_subplot(111)
+        
+        axs.imshow(np.flipud(profim))
+        axs.grid(color="white", linewidth=2)
+        axs.set_xlabel("Relative Distance (m)", fontsize=20)
+        axs.set_ylabel("Angle of Arrival (deg)", fontsize=20)
+
+        axs.set_xticks(np.linspace(0, profim.shape[0], self.num_d_steps//20))
+        axs.set_xticklabels(np.linspace(self.d_thresh[0], self.d_thresh[1], self.num_d_steps//20))
+        axs.set_yticks(np.linspace(0, profim.shape[0], self.num_d_steps//20))
+        axs.set_yticklabels(np.linspace(self.theta_thresh[1], self.theta_thresh[0], self.num_d_steps//20))
+
+        axs.tick_params(axis='both', which='major', labelsize=18)
+
+        fig.set_tight_layout(True)
+
+
+        canvas.draw()  # draw the canvas, cache the renderer
+        
+        width, height = fig.get_size_inches() * fig.get_dpi()
+        image = np.frombuffer(canvas.tostring_rgb(), dtype='uint8').reshape((int(height), int(width), 3))
+        return image
 
     def export_last_channel(self):
         if self.csi_export_mac_filter is not None and self.last_mac != self.csi_export_mac_filter:
@@ -182,8 +220,10 @@ class aoa_node:
         # Publish the AoA-ToF profile
         if prof is not None and self.pub_prof:
             if self.aoa_sensors[mac].prof_dim == 2:
+
                 if len(prof.shape) == 3:
                     prof = prof[:,:,self.prof_tx_id]
+<<<<<<< HEAD
                 if self.use_color:
                     profim = (self.accept_color(prof/np.max(prof))[:,:,:3] * 255).astype(np.uint8)
                     peak_idx = int((self._theta_range.shape[0]-1)*(self.last_aoa - self._theta_range[0])/(self._theta_range[-1] - self._theta_range[0]))
@@ -196,10 +236,30 @@ class aoa_node:
                     im_msg = io_utils.image_message(profim, msg.header.stamp, 'mono8')
                     self._prof_pub.publish(im_msg)
             else:
+=======
+
+                prof_im = self.draw_prof_image(prof)
+                im_msg = io_utils.image_message(prof_im, msg.header.stamp, 'rgb8')
+                self._prof_pub.publish(im_msg)
+            else: 
+>>>>>>> f4fc3c10ad1554aa6c050cf575ef1b66d8161be4
                 profim = io_utils.draw_1d_profile(prof, self._theta_range)
                 im_msg = io_utils.image_message(profim, msg.header.stamp, 'rgb8')
                 self._prof_pub.publish(im_msg)
+                
+            # Publish a pose message to visualize the bearing 
+            bearing_pose = Pose()
+            bearing_pose.orientation.x = 0   
+            bearing_pose.orientation.y = 0    
+            bearing_pose.orientation.z = np.sin(self.last_aoa/2)   
+            bearing_pose.orientation.w = np.cos(self.last_aoa/2)
 
+            bearing_pose_msg = PoseStamped()
+            bearing_pose_msg.pose = bearing_pose
+            bearing_pose_msg.header = msg.header
+            bearing_pose_msg.header.frame_id = "map"
+            self._bearing_pose_pub.publish(bearing_pose_msg)   
+        
         toc = time.time()
         print(f"prof time: {toc - tic:.3e}")
 
@@ -212,6 +272,32 @@ class aoa_node:
                 channel_im = io_utils.draw_channel_image(self.last_channel)
             im_msg = io_utils.image_message(channel_im, msg.header.stamp, 'rgb8')
             self._channel_pub.publish(im_msg)
+
+        # add AP marker into the world
+        ap_marker_msg = Marker()
+        ap_marker_msg.header.frame_id = "map"
+        ap_marker_msg.header.stamp = msg.header.stamp
+        ap_marker_msg.id = 0
+
+        ap_marker_msg.pose.position.x = -0.1
+        ap_marker_msg.pose.position.y = -0.75
+        ap_marker_msg.pose.position.z = 0
+        ap_marker_msg.pose.orientation.x = 0.0
+        ap_marker_msg.pose.orientation.y = 0.0
+        ap_marker_msg.pose.orientation.z = np.sin(-45*np.pi/180)
+        ap_marker_msg.pose.orientation.w = np.cos(-45*np.pi/180)
+        ap_marker_msg.scale.x = 0.05
+        ap_marker_msg.scale.y = 0.05
+        ap_marker_msg.scale.z = 0.05
+
+        ap_marker_msg.color.a = 1
+        ap_marker_msg.color.r = 0.6
+        ap_marker_msg.color.g = 0.6
+        ap_marker_msg.color.b = 0.6
+
+        ap_marker_msg.type = Marker.MESH_RESOURCE;
+        ap_marker_msg.mesh_resource = "package://csi_tools/meshes/ap_simple.stl"
+        self._ap_marker_publisher.publish(ap_marker_msg)
 
         toc = time.time()
         print(f"chan time: {toc - tic:.3e}")
@@ -247,10 +333,12 @@ class aoa_node:
 
         self._prof_pub = rospy.Publisher('/prof', Image, queue_size=3)
         self._channel_pub = rospy.Publisher('/channel', Image, queue_size=3)
+        self._bearing_pose_pub = rospy.Publisher('/bearing_pose', PoseStamped, queue_size=3)
+        self._ap_marker_publisher = rospy.Publisher('/ap_marker', Marker, queue_size=1)
 
         if self.comp is None:
             rospy.logwarn("No compensation provided.")
 
-        rospy.Subscriber('/csi', Wifi, self.csi_callback)
+        rospy.Subscriber('/csi', Wifi, self.csi_callback, queue_size=1)
         save_service = rospy.Service('savecsi', SaveChannel, self.save_channel)
         rospy.spin()
