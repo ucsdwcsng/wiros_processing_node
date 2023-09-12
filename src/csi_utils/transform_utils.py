@@ -446,9 +446,6 @@ class spotfi_sensor:
                 circ_crop[jj//2, 1:].reshape(-1, circ_crop[jj//2, 1:].shape[2])
 
 
-        # import pdb
-        # pdb.set_trace()
-
         R = csi_smooth @ csi_smooth.conj().T
         [vals, vecs] = np.linalg.eigh(R)
 
