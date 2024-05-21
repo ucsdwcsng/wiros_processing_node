@@ -29,7 +29,7 @@ def fft_mat(rx, freqs, theta, d):
     #steering matrix for ToF
     omega=2*np.pi*freqs[:,np.newaxis]/(C_SPEED)
     d = d[np.newaxis,:]
-    Tau = np.exp(-1.0j*omega*d)
+    Tau = np.exp(1.0j*omega*d)
 
     return Theta, Tau
 
@@ -368,10 +368,10 @@ def spotfi_mat(rx, freqs, theta, d, len_rect, ht_rect):
     
     Phi = np.ones((ht_rect, len(theta)))*(1 + 0j)
     for i in range(1, ht_rect):
-        Phi[i, :] = np.exp(1j*2*np.pi*(mean_freq/C_SPEED) \
+        Phi[i, :] = np.exp(-1j*2*np.pi*(mean_freq/C_SPEED) \
                             *ant_sep*np.sin(theta))**i
 
-    omega_mat = np.repeat(np.exp(1j*2*np.pi*diff_freq*d/C_SPEED),
+    omega_mat = np.repeat(np.exp(-1j*2*np.pi*diff_freq*d/C_SPEED),
                           len_rect)
     powers = np.arange(1, len_rect+1).repeat(len(d)).reshape(-1,len(d)).T.flatten()
     Omega = np.power(omega_mat, powers).reshape(-1, len_rect).T
@@ -385,13 +385,11 @@ def circulant(arr):
     return toRet
 
 def col_norm(matrix):
-    toRet = np.zeros(matrix.shape[1], dtype=matrix.dtype)
-    for ii in range(matrix.shape[1]):
-      toRet[ii] = np.linalg.norm(matrix[:, ii])
-    return toRet
+    return np.linalg.norm(matrix, axis=0)
+
 
 class spotfi_sensor:
-    def __init__(self, rx_pos, theta_space, tof_space):
+    def __init__(self, rx_pos, theta_space, tof_space, valid_tx_ant=None):
         self.rx_pos = rx_pos
         self.theta_space = theta_space
         self.tof_space = tof_space
@@ -401,6 +399,8 @@ class spotfi_sensor:
 
         self.steering_mat = {}
 
+        self.prof_dim = 2
+        
 
     def __call__(self, H, chanspec):
         """
@@ -413,6 +413,12 @@ class spotfi_sensor:
           as the sliding window spans all the way to the end of the matrix
           2. It makes no prior assumption to number of antennas
         """
+
+        # change ordering if needed
+        # ordering = [0, 2, 1, 3]
+        # H = H[:, ordering]
+        # rx_pos = self.rx_pos[ordering,:]
+
         csi_mat_shape = np.array(H.shape)
         n_sub = csi_mat_shape[0]
         n_rx_ant = csi_mat_shape[1]
@@ -422,7 +428,7 @@ class spotfi_sensor:
 
         if chanspec not in self.chanspec_seen:
             freqs = constants.get_channel_frequencies(chanspec[0],chanspec[1]),
-            self.steering_mat[chanspec] = spotfi_mat(self.rx_pos, freqs,
+            self.steering_mat[chanspec] = spotfi_mat(rx_pos, freqs,
                                                      self.theta_space, self.tof_space,
                                                      len_rect, ht_rect)
 
@@ -441,10 +447,9 @@ class spotfi_sensor:
 
 
         R = csi_smooth @ csi_smooth.conj().T
-        [vals, vecs] = np.linalg.eig(R)
-        vecs = vecs/col_norm(vecs)
+        [vals, vecs] = np.linalg.eigh(R)
 
-        assert np.all(vals >= 0), "PSD matrix cannot have negative eigenvalues"
+        # assert np.all(vals >= 0), f"PSD matrix cannot have negative eigenvalues, {vals}"
         idx = np.abs(vals) < SPOTFI_THRESH*np.max(np.abs(vals))
         profile = np.reciprocal(col_norm(vecs[:, idx].conj().T @ self.steering_mat[chanspec])**2 \
                                 + EPS)

@@ -223,11 +223,26 @@ class aoa_node:
 
                 if len(prof.shape) == 3:
                     prof = prof[:,:,self.prof_tx_id]
+<<<<<<< HEAD
+                if self.use_color:
+                    profim = (self.accept_color(prof/np.max(prof))[:,:,:3] * 255).astype(np.uint8)
+                    peak_idx = int((self._theta_range.shape[0]-1)*(self.last_aoa - self._theta_range[0])/(self._theta_range[-1] - self._theta_range[0]))
+                    profim[peak_idx,:,:] = [255,0,0]
+                    profim = np.flipud(profim)
+                    im_msg = io_utils.image_message(profim, msg.header.stamp, 'rgb8')
+                    self._prof_pub.publish(im_msg)
+                else:
+                    profim = (255*prof/np.max(prof)).astype(np.uint8)
+                    im_msg = io_utils.image_message(profim, msg.header.stamp, 'mono8')
+                    self._prof_pub.publish(im_msg)
+            else:
+=======
 
                 prof_im = self.draw_prof_image(prof)
                 im_msg = io_utils.image_message(prof_im, msg.header.stamp, 'rgb8')
                 self._prof_pub.publish(im_msg)
             else: 
+>>>>>>> f4fc3c10ad1554aa6c050cf575ef1b66d8161be4
                 profim = io_utils.draw_1d_profile(prof, self._theta_range)
                 im_msg = io_utils.image_message(profim, msg.header.stamp, 'rgb8')
                 self._prof_pub.publish(im_msg)
@@ -286,7 +301,7 @@ class aoa_node:
 
         toc = time.time()
         print(f"chan time: {toc - tic:.3e}")
-        rospy.loginfo("RSSI %f, AOA %f", msg.rssi, self.last_aoa)
+        rospy.loginfo("RSSI %f, AOA %f deg", msg.rssi, self.last_aoa*180/np.pi)
 
         
     def save_channel(self, req):
