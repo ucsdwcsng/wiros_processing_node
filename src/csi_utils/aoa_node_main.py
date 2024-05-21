@@ -223,7 +223,6 @@ class aoa_node:
 
                 if len(prof.shape) == 3:
                     prof = prof[:,:,self.prof_tx_id]
-<<<<<<< HEAD
                 if self.use_color:
                     profim = (self.accept_color(prof/np.max(prof))[:,:,:3] * 255).astype(np.uint8)
                     peak_idx = int((self._theta_range.shape[0]-1)*(self.last_aoa - self._theta_range[0])/(self._theta_range[-1] - self._theta_range[0]))
@@ -236,13 +235,6 @@ class aoa_node:
                     im_msg = io_utils.image_message(profim, msg.header.stamp, 'mono8')
                     self._prof_pub.publish(im_msg)
             else:
-=======
-
-                prof_im = self.draw_prof_image(prof)
-                im_msg = io_utils.image_message(prof_im, msg.header.stamp, 'rgb8')
-                self._prof_pub.publish(im_msg)
-            else: 
->>>>>>> f4fc3c10ad1554aa6c050cf575ef1b66d8161be4
                 profim = io_utils.draw_1d_profile(prof, self._theta_range)
                 im_msg = io_utils.image_message(profim, msg.header.stamp, 'rgb8')
                 self._prof_pub.publish(im_msg)
